@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Avoid the Blocks</title>
+<style>
+body{margin:0;font-family:Arial;background:#fff}
+canvas{display:block;margin:10px auto;border:3px solid #333;border-radius:8px;background:#e3f2fd}
+#hud{display:flex;justify-content:center;gap:12px}
+button{padding:8px;border-radius:6px;border:none;background:#1976d2;color:white}
+</style>
+</head>
+<body>
+<h1 style="text-align:center;color:#1976d2">Avoid the Blocks</h1>
+<canvas id="g" width="360" height="560"></canvas>
+<div id="hud" style="text-align:center"><button id="start">Mula</button><span id="sc">Score: 0</span></div>
+
+<script>
+const canvas=document.getElementById('g'), ctx=canvas.getContext('2d');
+let player={x:160,y:500,w:40,h:20}, blocks=[], running=false, score=0, spawnRate=0.02;
+function spawn(){ blocks.push({x:Math.random()*(320), y:-30, w:40 + Math.random()*30, h:20 + Math.random()*20, spd:2+Math.random()*2}); }
+function tick(){ if(Math.random()<spawnRate) spawn();
+  ctx.clearRect(0,0,360,560);
+  // blocks
+  ctx.fillStyle='#c62828';
+  for(let i=blocks.length-1;i>=0;i--){
+    let b=blocks[i]; b.y += b.spd;
+    ctx.fillRect(b.x,b.y,b.w,b.h);
+    if(b.y > 600){ blocks.splice(i,1); score++; document.getElementById('sc').textContent='Score: '+score; }
+    // collision
+    if(!(player.x+player.w < b.x || player.x > b.x+b.w || player.y+player.h < b.y || player.y > b.y+b.h)){
+      running=false; alert('Game Over. Score: '+score);
+    }
+  }
+  // player
+  ctx.fillStyle='#0d47a1'; ctx.fillRect(player.x,player.y,player.w,player.h);
+  if(running) requestAnimationFrame(tick);
+}
+canvas.addEventListener('touchmove',e=>{
+  const r=canvas.getBoundingClientRect();
+  player.x = e.touches[0].clientX - r.left - player.w/2;
+  if(player.x<0) player.x=0; if(player.x>320) player.x=320;
+  e.preventDefault();
+},{passive:false});
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect();
+  player.x = e.clientX - r.left - player.w/2;
+  if(player.x<0) player.x=0; if(player.x>320) player.x=320;
+});
+
+document.getElementById('start').addEventListener('click', ()=>{
+  if(running) return;
+  blocks=[]; score=0; spawnRate=0.02; running=true; requestAnimationFrame(tick);
+});
+</script>
+</body>
+</html>
